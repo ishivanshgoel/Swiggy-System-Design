@@ -1,35 +1,38 @@
 #include<iostream>
 #include<stdlib.h>
-#include<queue>
 #include <unordered_map>
+#include "queueswiggy.cpp"
 using namespace std;
 
+// menuCard category
+struct menuCardCategory{
+    int item_code;
+    float price;
+};
+
+// restaurant category
 struct NodeRestraunt{
 	//	menuCard is map of category and pointer to LinkedList containing items under the category
 	string name;
-	unordered_map<int,int*> menuCard; 
+    struct menuCardCategory* menuCard;
 	//	queue will contain the orderes recieved by the restraunt...
-	queue<int> orders;
-	struct Node* next;
+    SwiggyQueue swiggyqueue;
+	struct NodeRestraunt* next;
 };
 
 class Swiggy{
 	private:
 		struct NodeRestraunt* head;
 		unordered_map<string,struct NodeRestraunt*> SwiggyHash;
+
 	public:
 		Swiggy(){
 			head=NULL;
 		}
 		void register_restraunt(string name);
-//		category 0 for breakfast, 1 for lunch, 2 for dinner
-		void updateMenuCard(string res_name,int category);
-//		pass restraunt name to oder
+		void updateMenuCard(string res_name);
 		void order(string name,int item_number);
-//		getting detail of particular restaurant by name
-		void listRestrauntDetails(string name);
-//		Listing Summary of all the registered restaurants
-//		void listFullSummary(string res_name);
+        void listRestrauntDetails(string res_name);
 };
 
 void Swiggy :: register_restraunt(string name){
@@ -38,31 +41,58 @@ void Swiggy :: register_restraunt(string name){
 	temp->name=name;
 //	swiggyHash for searching restraunt by name
 	SwiggyHash[name]=temp;
-//	categories for menuCard
-	temp->menuCard[0]=NULL;
-	temp->menuCard[1]=NULL;
-	temp->menuCard[2]=NULL;
 }
 
 
-//	to update menuCard
-void Swiggy :: updateMenuCard(string res_name,int category){
-	cout<<"Updating MenuCard category number: "<<category<<" under "<<res_name<<endl;
-	struct NodeRestraunt* res=SwiggyHash[res_name];
-//	make linked list insertion here
-	res->menuCard[category]=NULL;
+//	adding items to menu Card
+void Swiggy :: updateMenuCard(string res_name){
+	cout<<"\nUpdating MenuCard of "<<res_name<<endl;
+	struct NodeRestraunt* temp=SwiggyHash[res_name];
+    int number,item_code,price;
+    cout<<"\nEnter number of items to be inserted: "<<endl;
+    cin>>number;
+    temp->menuCard=(struct menuCardCategory*)malloc(sizeof(menuCardCategory)*number);
+//	categories for menuCard
+    for(int i=1;i<=number;i++){
+        cout<<i<<" Enter item code: "<<endl;
+        cin>>temp->menuCard[i-1].item_code;
+        cout<<i<<" Enter price: "<<endl;
+        cin>>temp->menuCard[i-1].price;
+    }
 }
 
 
 // to place order in particular restraunt with given item number
 void Swiggy :: order(string res_name,int item_number){
-	cout<<"Item number "<<item_number<<" has been assigned to "<<res_name<<endl;
+	cout<<"\nItem number "<<item_number<<" has been assigned to "<<res_name<<endl;
 	struct NodeRestraunt* res=SwiggyHash[res_name];
-	res->orders.push(item_number);
+	res->swiggyqueue.newOrder(item_number);
+}
+
+
+
+void Swiggy :: listRestrauntDetails(string res_name){
+    struct NodeRestraunt* temp=SwiggyHash[res_name];
+    cout<<"\nRestaurant Name: "<<temp->name<<endl;
+    cout<<"\nRestaurant Orders Priority"<<endl;
+    temp->swiggyqueue.currentlyPreparingOrder();
+    temp->swiggyqueue.showAllOrders();
 }
 
 
 int main(){
 	Swiggy s1;
-	s1.register_restraunt("Buddhu Halwai");
+	s1.register_restraunt("Gopal Sweets");
+
+    s1.updateMenuCard("Gopal Sweets");
+
+    s1.order("Gopal Sweets",123);
+    s1.order("Gopal Sweets",150);
+    s1.order("Gopal Sweets",256);
+    s1.listRestrauntDetails("Gopal Sweets");
+    // s1.listFullSummary("Gopal Sweets");
+
+    // s1.register_restraunt("Raj Gopal");
+    // s1.register_restraunt("Prem Chand");
+    
 }
